@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #FFFDD0; /* Egg white */
+            overflow: hidden;
+            font-family: 'Times New Roman', Times, serif;
+            height: 100vh;
+            position: relative;
+            background-image: url('web-background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        /* Permanent Text at Top */
+        #catch-text {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #e63939;
+            padding: 12px 35px;
+            border-radius: 30px;
+            font-size: 1.55rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            border: 3px solid #e63939;
+            z-index: 30;
+            font-family: 'Times New Roman', Times, serif;
+            white-space: nowrap;
+            text-align: center;
+        }
+        
+        /* Password overlay */
+        #password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .password-box {
+            background: #000000;
+            padding: 50px 60px;
+            border: 4px solid #ffffff;
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+        }
+        
+        .password-box h1 {
+            color: #ffffff;
+            font-size: 2.4rem;
+            margin-bottom: 20px;
+        }
+        
+        .hint {
+            color: #e63939;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+        
+        input {
+            padding: 14px;
+            font-size: 1.3rem;
+            border: 3px solid #ffffff;
+            background: #111111;
+            color: #ffffff;
+            width: 100%;
+            text-align: center;
+        }
+        
+        button {
+            margin-top: 25px;
+            padding: 14px 40px;
+            background: #ffffff;
+            color: #000000;
+            border: 3px solid #ffffff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #e63939;
+            color: #ffffff;
+        }
+        
+        /* Spider */
+        #spider {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 20;
+            user-select: none;
+        }
+        
+        #spider:hover {
+            transform: scale(1.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Password Screen -->
+    <div id="password-overlay">
+        <div class="password-box">
+            <h1>ENTER PASSWORD</h1>
+            <p class="hint">Hint: It's our million dollar idea</p>
+            <input type="password" id="password-input" placeholder="••••••••">
+            <br>
+            <button onclick="checkPassword()">SUBMIT</button>
+        </div>
+    </div>
+
+    <!-- Permanent Text at Top -->
+    <div id="catch-text">Catch me three times</div>
+
+    <!-- Spider -->
+    <img id="spider" src="spider.png" alt="Spider">
+
+    <!-- Catch Sound -->
+    <audio id="catch-sound" preload="auto">
+        <source src="audio.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const spider = document.getElementById('spider');
+        const catchSound = document.getElementById('catch-sound');
+        
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let spiderX = width / 2;
+        let spiderY = 100;
+        let targetX = width / 2;
+        let targetY = height / 3;
+        let rubCount = 0;
+        
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+        }
+        
+        function moveSpider() {
+            const centerX = width / 2;
+            const centerY = height / 3;
+            const maxRadius = Math.min(width, height) * 0.45;
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 60 + Math.random() * maxRadius;
+            
+            targetX = centerX + Math.cos(angle) * distance;
+            targetY = centerY + Math.sin(angle) * (distance * 0.75);
+        }
+        
+        function animate() {
+            spiderX = spiderX * 0.88 + targetX * 0.12;
+            spiderY = spiderY * 0.88 + targetY * 0.12;
+            
+            spider.style.left = (spiderX - 45) + 'px';
+            spider.style.top = (spiderY - 45) + 'px';
+            
+            if (Math.random() < 0.018) moveSpider();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        function checkPassword() {
+            const input = document.getElementById('password-input').value.toLowerCase().trim();
+            if (input === "chooti") {
+                document.getElementById('password-overlay').style.display = 'none';
+                startGame();
+            } else {
+                alert("Access Denied");
+                document.getElementById('password-input').value = "";
+            }
+        }
+        
+        function startGame() {
+            resize();
+            window.addEventListener('resize', resize);
+            
+            spider.style.left = (spiderX - 45) + 'px';
+            spider.style.top = (spiderY - 45) + 'px';
+            
+            moveSpider();
+            animate();
+            
+            spider.addEventListener('click', catchSpider);
+        }
+        
+        function catchSpider() {
+            rubCount++;
+            
+            catchSound.currentTime = 0;
+            catchSound.play().catch(() => {});
+            
+            spider.style.transform = 'scale(0.65)';
+            setTimeout(() => spider.style.transform = 'scale(1)', 200);
+            
+            if (rubCount >= 3) {
+                setTimeout(() => {
+                    // Opens your local photo file in new tab
+                    window.open('secret-photo.jpg', '_blank'); 
+                }, 700);
+            } else {
+                setTimeout(moveSpider, 450);
+            }
+        }
+        
+        document.getElementById('password-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+    </script>
+</body>
+</html>
